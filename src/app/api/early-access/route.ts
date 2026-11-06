@@ -26,9 +26,11 @@ function clientIp(request: Request): string {
  * Early access signup endpoint.
  *
  * Validates with the same Zod schema as the form, applies a honeypot check,
- * a minimum submit time and a per IP rate limit, then stores the row in
- * DynamoDB with a conditional put on the email and sends a confirmation
- * through SES. Without AWS environment variables it logs and returns success.
+ * a minimum submit time and a per IP rate limit, then saves it for real:
+ * a DynamoDB conditional put when AWS is configured, otherwise one email to
+ * CONTACT_EMAIL through Resend. It only saves data and sends no confirmation
+ * to the submitter. When no storage is configured it returns an error rather
+ * than a fake success.
  */
 export async function POST(request: Request): Promise<NextResponse> {
   let body: unknown;
@@ -79,7 +81,6 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   return NextResponse.json({
     ok: true,
-    mock: result.mock,
     duplicate: result.duplicate,
   });
 }

@@ -1,6 +1,7 @@
 import { EarlyAccessForm } from '@/components/EarlyAccessForm';
 import { Reveal, RevealGroup } from '@/components/Reveal';
 import { earlyAccessBenefits } from '@/lib/content';
+import { site } from '@/lib/site';
 
 export function EarlyAccessSection() {
   return (
@@ -26,8 +27,8 @@ export function EarlyAccessSection() {
 
           <Reveal delay={0.12}>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-page/80 sm:text-lg">
-              We are speaking with organizations worldwide. Tell us where you work and what you
-              need to decide; we will follow up to discuss whether an evaluation is a fit.
+              We are inviting organizations to join the pilot group. Tell us where you work and
+              what you need to decide; we will follow up to discuss whether an evaluation is a fit.
             </p>
           </Reveal>
 
@@ -47,7 +48,7 @@ export function EarlyAccessSection() {
         </div>
 
         <div>
-          <EarlyAccessForm />
+          <EarlyAccessForm contactEmail={site.email} />
         </div>
       </div>
     </section>

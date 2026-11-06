@@ -2,26 +2,13 @@
 
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
-import { plannedAwsServices } from '@/lib/content';
+import { awsPhases } from '@/lib/content';
 
-const awsUses = [
-  {
-    title: 'Store satellite observations',
-    service: 'Amazon S3',
-    detail: 'Keep the open imagery needed for each pilot region and the reports created from it.',
-  },
-  {
-    title: 'Process large images when needed',
-    service: 'AWS Batch',
-    detail:
-      'Run image analysis in scalable jobs, rather than keeping expensive compute running all the time.',
-  },
-  {
-    title: 'Develop and test crop models',
-    service: 'Amazon SageMaker',
-    detail:
-      'Evaluate models against partner-provided field observations before making performance claims.',
-  },
+const phaseNotes = [
+  'Large imagery storage: source satellite observations are large, cheap and durable object storage comes first.',
+  'Bursty batch compute: image analysis runs when new observations arrive, not continuously, so on-demand jobs fit better than always-on servers.',
+  'Model development: crop condition and flood impact models are built and evaluated against field observations before any results are served.',
+  'Geospatial queries: finding results by field or district needs a spatial database, planned as PostgreSQL with PostGIS.',
 ];
 
 export function Architecture() {
@@ -36,74 +23,52 @@ export function Architecture() {
           <SectionHeading
             titleId="architecture-title"
             eyebrow="AWS and the product plan"
-            title="Use cloud resources where they add practical value."
-            lead="Everything is set up on AWS. We are just iterating on the final changes, because satellite images are large, analysis needs can vary, and the service should grow with pilot demand."
+            title="A phased plan for cloud resources where they add value."
+            lead="Fieldline is designed around AWS in three phases. Satellite images are large, analysis needs vary over the season, and this plan will grow with what the pilot proves is needed."
           />
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
-            <Reveal>
-              <div className="h-full rounded-[1.25rem] border border-line bg-surface-2 p-6 sm:p-7">
-                <p className="mono-label text-brand">Built on AWS</p>
-                <h3 className="mt-3 font-display text-2xl tracking-tight text-ink">
-                  Set up to run on AWS from day one
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink-2 sm:text-base">
-                  The system is set up to cover the cloud storage and computing needed to process
-                  satellite observations, test models against field evidence,
-                  and serve results to partner teams. Actual usage will depend on the pilot area,
-                  number of fields, image availability and model requirements. We are just
-                  iterating on the final changes.
-                </p>
-                <ul className="mt-6 space-y-4 border-t border-line pt-5">
-                  {awsUses.map((use) => (
-                    <li key={use.title}>
-                      <h4 className="text-sm font-semibold text-ink">{use.title}</h4>
-                      <p className="mt-1 text-sm leading-relaxed text-ink-2">{use.detail}</p>
-                      <p className="mt-1 font-mono text-xs text-brand">
-                        Planned service: {use.service}
-                      </p>
+          <div className="mt-10 space-y-8">
+            {awsPhases.map((phase, phaseIndex) => (
+              <div key={phase.name} className="border-y border-line py-6 first:border-t-0">
+                <h3 className="font-display text-xl tracking-tight text-ink">{phase.name}</h3>
+                <ul className="mt-4 grid gap-x-10 gap-y-4 sm:grid-cols-2">
+                  {phase.services.map((service, index) => (
+                    <li key={service.name}>
+                      <Reveal delay={((phaseIndex + index) % 4) * 0.03}>
+                        <h4 className="font-medium text-ink">{service.name}</h4>
+                        <p className="mt-1 text-sm leading-relaxed text-ink-2">
+                          {service.purpose}
+                        </p>
+                      </Reveal>
                     </li>
                   ))}
                 </ul>
               </div>
-            </Reveal>
+            ))}
+          </div>
 
-            <div>
-              <div className="border-y border-line py-5">
-                <p className="mono-label text-brand">Live on this page</p>
-                <h3 className="mt-2 font-display text-xl tracking-tight text-ink">
-                  The early-access form
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                  The signup endpoint saves requests in Amazon DynamoDB and sends
-                  confirmations through Amazon SES. Everything is set up; we are just
-                  iterating on the final changes with pilot partners.
-                </p>
-              </div>
-              <div className="border-b border-line py-5">
-                <p className="mono-label text-brand">Product services</p>
-                <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                  These services describe the architecture for satellite analysis. We
-                  are iterating on the final changes as pilot partners come on board.
-                </p>
-              </div>
-              <ul className="grid gap-x-8 sm:grid-cols-2">
-                {plannedAwsServices.map((service, index) => (
-                  <li key={service.name} className="border-b border-line py-4">
-                    <Reveal delay={(index % 2) * 0.04}>
-                      <h4 className="font-medium text-ink">{service.name}</h4>
-                      <p className="mt-1 text-sm leading-relaxed text-ink-2">{service.purpose}</p>
-                    </Reveal>
+          <Reveal>
+            <div className="mt-8 rounded-[1.25rem] border border-line bg-surface-2 p-6">
+              <h3 className="font-display text-lg tracking-tight text-ink">
+                Why these service shapes fit
+              </h3>
+              <ul className="mt-4 space-y-2.5">
+                {phaseNotes.map((note) => (
+                  <li key={note} className="flex gap-2.5 text-sm leading-relaxed text-ink-2">
+                    <span
+                      aria-hidden="true"
+                      className="mt-2 h-1 w-1 shrink-0 rounded-full bg-brand"
+                    />
+                    {note}
                   </li>
                 ))}
               </ul>
-              <p className="mt-5 text-xs leading-relaxed text-ink-2">
-                Satellite observations are intended to come from publicly available Sentinel-2 and
-                Landsat datasets. AWS service choices are configured and will be tuned as the
-                pilot scope and technical requirements are confirmed.
-              </p>
             </div>
-          </div>
+          </Reveal>
+
+          <p className="mt-6 text-xs leading-relaxed text-ink-2">
+            Scope and timing will be tuned with pilot partners.
+          </p>
         </div>
       </div>
     </section>

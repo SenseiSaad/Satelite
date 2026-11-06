@@ -11,7 +11,7 @@ export function HowItWorks() {
             titleId="how-title"
             eyebrow="How it works"
             title="A simple path from satellite image to field insight."
-            lead="Everything is set up. This is the process, explained without technical steps or unverified performance claims."
+            lead="This is the process the product is designed to follow, explained without technical steps or unverified performance claims."
           />
           <ol className="mt-10 divide-y divide-line border-y border-line">
             {steps.map((step) => (

@@ -9,10 +9,8 @@
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { SESClient } from '@aws-sdk/client-ses';
 
 let documentClient: DynamoDBDocumentClient | null = null;
-let sesClient: SESClient | null = null;
 
 export function getDocumentClient(): DynamoDBDocumentClient {
   if (!documentClient) {
@@ -23,19 +21,13 @@ export function getDocumentClient(): DynamoDBDocumentClient {
   return documentClient;
 }
 
-export function getSesClient(): SESClient {
-  if (!sesClient) {
-    sesClient = new SESClient({});
-  }
-  return sesClient;
-}
-
 /**
- * True when every variable the signup backend needs is present.
- * When false the API runs in mock mode: log to console, return success.
+ * True when every variable the DynamoDB path needs is present.
+ * When false the API falls back to emailing the submission to CONTACT_EMAIL
+ * through Resend, and fails if none of the storage options is configured.
  */
 export function isAwsConfigured(): boolean {
-  if (!process.env.DYNAMODB_TABLE_NAME || !process.env.SES_FROM_ADDRESS) {
+  if (!process.env.DYNAMODB_TABLE_NAME) {
     return false;
   }
 
@@ -50,7 +42,7 @@ export function isAwsConfigured(): boolean {
 export function awsConfigMissing(): string[] {
   const missing: string[] = [];
   if (!process.env.DYNAMODB_TABLE_NAME) missing.push('DYNAMODB_TABLE_NAME');
-  if (!process.env.SES_FROM_ADDRESS) missing.push('SES_FROM_ADDRESS');
   if (!process.env.AWS_REGION) missing.push('AWS_REGION');
   return missing;
 }
+

@@ -19,11 +19,16 @@ import {
   type EarlyAccessInput,
 } from '@/lib/schemas';
 
-type Status = 'idle' | 'submitting' | 'saving' | 'success' | 'error';
+type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 interface ServerFields {
   fields?: Record<string, string>;
   error?: string;
+}
+
+export interface EarlyAccessFormProps {
+  /** Reply address shown in the success message. */
+  contactEmail: string;
 }
 
 /**
@@ -54,7 +59,7 @@ const cropLabels: Record<string, string> = {
   other: 'Other',
 };
 
-export function EarlyAccessForm() {
+export function EarlyAccessForm({ contactEmail }: EarlyAccessFormProps) {
   const reduce = useReducedMotionSafe();
   const [status, setStatus] = useState<Status>('idle');
   const [serverMessage, setServerMessage] = useState('');
@@ -92,11 +97,9 @@ export function EarlyAccessForm() {
       };
 
       if (response.ok && data.ok) {
+        // Only show success when the server actually saved the submission.
         setDuplicate(Boolean(data.duplicate));
-        // Keep a short "saving" beat so the handoff to the confirmation panel
-        // feels deliberate rather than instant.
-        setStatus('saving');
-        window.setTimeout(() => setStatus('success'), reduce ? 600 : 2500);
+        setStatus('success');
         return;
       }
 
@@ -151,17 +154,17 @@ export function EarlyAccessForm() {
       className="rounded-[1.25rem] border border-line bg-surface-2 p-6 sm:p-8"
     >
       <span className="mono-label text-brand">
-        {duplicate ? 'Request already received' : 'Request confirmed'}
+        {duplicate ? 'Request already received' : 'Request received'}
       </span>
       <h3 className="mt-3 font-display text-2xl tracking-tight text-ink">
         {duplicate
           ? 'This email has already been submitted.'
-          : 'Your form has been saved.'}
+          : 'Your request has been saved.'}
       </h3>
       <p className="mt-3 text-sm leading-relaxed text-ink-2 sm:text-base">
         {duplicate
-          ? 'You are on our list. We will contact you at this address when it is your turn.'
-          : 'You will be contacted shortly at the email address you provided. Everything is set up on our side; we are just iterating on the final changes.'}
+          ? `This email has already been submitted. We will reply from ${contactEmail}.`
+          : `Thanks, we have received your request. We will reply from ${contactEmail}.`}
       </p>
 
       <div className="mt-6 border-t border-line pt-5">
@@ -378,14 +381,12 @@ export function EarlyAccessForm() {
         aria-live="polite"
         className="mt-5 min-h-[1.25rem] text-sm text-severe"
       >
-        {status === 'saving' ? 'Saving your request, do not close this page...' : serverMessage}
+        {serverMessage}
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-4">
-        <Button type="submit" disabled={isSubmitting || status === 'saving'}>
-          {isSubmitting || status === 'saving'
-            ? 'Saving your details...'
-            : 'Request early access'}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Sending...' : 'Request early access'}
         </Button>
         <span className="font-mono text-[11px] text-ink-2">
           One reply from a person, no mailing list.

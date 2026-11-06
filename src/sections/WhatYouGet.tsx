@@ -1,6 +1,6 @@
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
-import { exampleReport, metrics } from '@/lib/content';
+import { reportFormat } from '@/lib/content';
 
 export function WhatYouGet() {
   return (
@@ -14,55 +14,30 @@ export function WhatYouGet() {
             lead="The aim is to turn satellite observations into a short summary: what may be happening, how much of a field could be affected, and when the image was captured."
           />
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+          <div className="mt-10">
             <Reveal>
               <div className="rounded-[1.25rem] border border-line bg-surface-2 p-5 sm:p-7">
-                <p className="mono-label text-brand">Illustrative example only</p>
+                <p className="mono-label text-brand">Intended report format</p>
                 <h3 className="mt-3 font-display text-2xl tracking-tight text-ink">
-                  What a field report might say
+                  What a field report will contain
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                  These sample values are fictional and are not pilot results, measured accuracy, or
-                  a promise of performance.
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">
+                  This is the format we are designing with pilot partners. It shows what each
+                  report will cover; no values are shown because no pilot results have been
+                  published yet.
                 </p>
                 <dl className="mt-6 divide-y divide-line border-y border-line">
-                  {exampleReport.map((item) => (
-                    <div
-                      key={item.label}
-                      className="grid gap-1 py-4 sm:grid-cols-[1fr_auto] sm:gap-4"
-                    >
-                      <div>
-                        <dt className="text-sm font-medium text-ink">{item.label}</dt>
-                        <dd className="mt-1 text-xs leading-relaxed text-ink-2">
-                          {item.explanation}
-                        </dd>
-                      </div>
-                      <dd className="font-mono text-sm font-medium text-ink sm:text-right">
-                        {item.value}
-                      </dd>
+                  {reportFormat.map((item) => (
+                    <div key={item.label} className="py-4">
+                      <dt className="text-sm font-semibold text-ink">{item.label}</dt>
+                      <dd className="mt-1 text-sm leading-relaxed text-ink-2">{item.body}</dd>
                     </div>
                   ))}
                 </dl>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.06}>
-              <div>
-                <h3 className="font-display text-2xl tracking-tight text-ink">
-                  Information that supports decisions
-                </h3>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-2 sm:text-base">
-                  Each result should be dated and presented with its limitations, so a team can
-                  decide whether to investigate further.
+                <p className="mt-5 text-xs leading-relaxed text-ink-2">
+                  Reports are intended to be dated and presented with their limitations, so a team
+                  can decide whether to investigate further.
                 </p>
-                <dl className="mt-6 divide-y divide-line border-y border-line">
-                  {metrics.map((metric) => (
-                    <div key={metric.name} className="py-4">
-                      <dt className="text-sm font-semibold text-ink">{metric.name}</dt>
-                      <dd className="mt-1 text-sm leading-relaxed text-ink-2">{metric.body}</dd>
-                    </div>
-                  ))}
-                </dl>
               </div>
             </Reveal>
           </div>

@@ -67,7 +67,7 @@ export function Hero() {
 
           <Reveal delay={0.36}>
             <p className="mt-10 border-t border-line pt-5 font-mono text-xs text-ink-2">
-              Coverage: {site.coverage.scope} · {site.coverage.crops}
+              {site.coverage.scope}: {site.coverage.crops}; {site.coverage.regions}
             </p>
           </Reveal>
         </div>
@@ -97,7 +97,7 @@ export function Hero() {
               <div className="grid gap-1 py-4 last:pb-0 sm:grid-cols-[8rem_1fr] sm:gap-4">
                 <dt className="text-sm font-medium text-ink">Product stage</dt>
                 <dd className="text-sm leading-relaxed text-ink-2">
-                  Set up and running; we are iterating on the final changes
+                  Early access: onboarding pilot partners
                 </dd>
               </div>
             </dl>

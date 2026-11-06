@@ -1,26 +1,34 @@
 /**
- * Early access signup: validate, store in DynamoDB, confirm by email.
+ * Early access signup: validate, then persist for real.
  *
- * Mock mode: when the AWS environment variables are missing the submission is
- * logged to the server console and reported as success, so the repository runs
- * locally with zero setup.
+ * Storage: a conditional put in DynamoDB (on-demand table) when the AWS
+ * environment variables are configured. Without AWS credentials the
+ * submission is emailed to CONTACT_EMAIL through Resend, which works on
+ * Vercel. Neither path can return success unless the write succeeded, so
+ * the UI never shows a false confirmation.
+ *
+ * The signup only saves data. No confirmation email is sent to the
+ * submitter; a person replies directly from CONTACT_EMAIL.
  */
 
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import { SendEmailCommand } from '@aws-sdk/client-ses';
-import { getDocumentClient, getSesClient, isAwsConfigured } from './aws';
+import { getDocumentClient, isAwsConfigured } from './aws';
 import { checkRateLimit } from './rate-limit';
 import type { EarlyAccessData } from './schemas';
 import { organizationTypeLabels, hectareLabels } from './schemas';
-import { escapeHtml } from './utils';
 import { site } from './site';
 
 export type SignupResult =
-  | { ok: true; mock: boolean; duplicate: boolean }
-  | { ok: false; status: number; error: 'rate_limit' | 'server' };
+  | { ok: true; storage: 'dynamodb'; duplicate: boolean }
+  | { ok: true; storage: 'email'; duplicate: boolean }
+  | { ok: false; status: number; error: 'rate_limit' | 'not_configured' | 'server' };
 
 /** Minimum time between form mount and submit, in milliseconds. */
 export const MIN_SUBMIT_MS = 3_000;
+
+export function isResendConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY && site.email);
+}
 
 function isConditionalCheckFailed(error: unknown): boolean {
   return (
@@ -40,27 +48,25 @@ export async function recordSignup(
     return { ok: false, status: 429, error: 'rate_limit' };
   }
 
-  if (!isAwsConfigured()) {
-    // Mock mode. No credentials, no table, still a working demo.
-    console.log(
-      '[early-access:mock]',
-      JSON.stringify({
-        email: data.email,
-        organization: data.organization,
-        organizationType: data.organizationType,
-        regionOfInterest: data.regionOfInterest,
-        cropsOfInterest: data.cropsOfInterest,
-        hectares: data.hectares,
-        receivedAt: new Date(now).toISOString(),
-        ip: meta.ip,
-      }),
-    );
-    return { ok: true, mock: true, duplicate: false };
+  if (isAwsConfigured()) {
+    return storeInDynamoDb(data, { ip: meta.ip, now });
   }
 
+  if (isResendConfigured()) {
+    return sendByEmail(data, { ip: meta.ip, now });
+  }
+
+  // Nothing is configured to persist the request. Fail honestly instead of
+  // pretending the submission was saved.
+  console.error('[early-access] no storage configured: set DYNAMODB_TABLE_NAME plus AWS credentials, or RESEND_API_KEY with CONTACT_EMAIL');
+  return { ok: false, status: 500, error: 'not_configured' };
+}
+
+async function storeInDynamoDb(
+  data: EarlyAccessData,
+  meta: { ip: string; now: number },
+): Promise<SignupResult> {
   const table = process.env.DYNAMODB_TABLE_NAME as string;
-  const fromAddress = process.env.SES_FROM_ADDRESS as string;
-  const email = data.email;
 
   try {
     await getDocumentClient().send(
@@ -68,9 +74,9 @@ export async function recordSignup(
         TableName: table,
         Item: {
           // Partition key. The conditional put on this key blocks duplicates.
-          pk: `EMAIL#${email}`,
+          pk: `EMAIL#${data.email}`,
           entityType: 'early_access',
-          email,
+          email: data.email,
           fullName: data.fullName,
           organization: data.organization,
           organizationType: data.organizationType,
@@ -79,7 +85,7 @@ export async function recordSignup(
           hectares: data.hectares,
           useCase: data.useCase,
           consent: data.consent,
-          createdAt: new Date(now).toISOString(),
+          createdAt: new Date(meta.now).toISOString(),
           ip: meta.ip,
         },
         ConditionExpression: 'attribute_not_exists(pk)',
@@ -87,77 +93,74 @@ export async function recordSignup(
     );
   } catch (error) {
     if (isConditionalCheckFailed(error)) {
-      return { ok: true, mock: false, duplicate: true };
+      return { ok: true, storage: 'dynamodb', duplicate: true };
     }
     console.error('[early-access] dynamodb put failed', error);
     return { ok: false, status: 500, error: 'server' };
   }
 
-  // Confirmation email is best effort. The stored row is the source of truth.
+  return { ok: true, storage: 'dynamodb', duplicate: false };
+}
+
+async function sendByEmail(
+  data: EarlyAccessData,
+  meta: { ip: string; now: number },
+): Promise<SignupResult> {
+  const apiKey = process.env.RESEND_API_KEY as string;
+
   try {
-    await getSesClient().send(
-      new SendEmailCommand({
-        Source: fromAddress,
-        Destination: { ToAddresses: [email] },
-        Message: {
-          Subject: { Data: `${site.name}: your form has been saved` },
-          Body: {
-            Text: { Data: buildTextBody(data) },
-            Html: { Data: buildHtmlBody(data) },
-          },
-        },
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM_ADDRESS ?? `Fieldline <onboarding@resend.dev>`,
+        to: [site.email],
+        subject: `Early access request: ${data.organization}`,
+        text: buildSubmissionText(data, meta.now, meta.ip),
       }),
-    );
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('[early-access] resend send failed', response.status, detail);
+      return { ok: false, status: 500, error: 'server' };
+    }
   } catch (error) {
-    console.error('[early-access] ses send failed', error);
+    console.error('[early-access] resend send failed', error);
+    return { ok: false, status: 500, error: 'server' };
   }
 
-  return { ok: true, mock: false, duplicate: false };
+  return { ok: true, storage: 'email', duplicate: false };
 }
 
-function buildTextBody(data: EarlyAccessData): string {
+function buildSubmissionText(data: EarlyAccessData, now: number, ip: string): string {
   return [
-    `Hi ${data.fullName},`,
+    'New early access request from the website form.',
     '',
-    `Thanks for asking about ${site.name} early access. Your form has been saved and you will be contacted shortly.`,
-    '',
+    `Name: ${data.fullName}`,
+    `Email: ${data.email}`,
     `Organization: ${data.organization} (${organizationTypeLabels[data.organizationType]})`,
     `Region of interest: ${data.regionOfInterest}`,
-    `Crops: ${data.cropsOfInterest.join(', ')}`,
-    `Area in scope: ${hectareLabels[data.hectares]}`,
+    `Crops: ${data.cropsOfInterest.map((crop) => cropLabels[crop] ?? crop).join(', ')}`,
+    `Area: ${hectareLabels[data.hectares]}`,
     '',
-    'What happens next: we review every request by hand and reply with pilot',
-    'details, the field boundaries format we need, and a call if it fits.',
+    'Use case:',
+    data.useCase,
     '',
-    site.email
-      ? `Questions? Reply to this address or write to ${site.email}.`
-      : 'Questions? Reply to this email.',
-    '',
-    `${site.name}`,
-    site.tagline,
+    `Received at: ${new Date(now).toISOString()}`,
+    `IP: ${ip}`,
   ].join('\n');
 }
 
-function buildHtmlBody(data: EarlyAccessData): string {
-  const name = escapeHtml(data.fullName);
-  const organization = escapeHtml(data.organization);
-  const region = escapeHtml(data.regionOfInterest);
-  const crops = escapeHtml(data.cropsOfInterest.join(', '));
-  const hectares = escapeHtml(hectareLabels[data.hectares]);
-  const orgType = escapeHtml(organizationTypeLabels[data.organizationType]);
-
-  return [
-    `<p>Hi ${name},</p>`,
-    `<p>Thanks for asking about ${escapeHtml(site.name)} early access. Your form has been saved and you will be contacted shortly.</p>`,
-    `<p><strong>Organization:</strong> ${organization} (${orgType})<br>`,
-    `<strong>Region of interest:</strong> ${region}<br>`,
-    `<strong>Crops:</strong> ${crops}<br>`,
-    `<strong>Area in scope:</strong> ${hectares}</p>`,
-    '<p><strong>What happens next:</strong> we review every request by hand and reply',
-    'with pilot details, the field boundaries format we need, and a call if it fits.</p>',
-    site.email
-      ? `<p>Questions? Write to <a href="mailto:${escapeHtml(site.email)}">${escapeHtml(site.email)}</a>.</p>`
-      : '<p>Questions? Reply to this email.</p>',
-    `<p>${escapeHtml(site.name)}<br>${escapeHtml(site.tagline)}</p>`,
-  ].join('\n');
-}
+const cropLabels: Record<string, string> = {
+  cotton: 'Cotton',
+  wheat: 'Wheat',
+  rice: 'Rice',
+  maize: 'Maize',
+  sugarcane: 'Sugarcane',
+  soybean: 'Soybean',
+  other: 'Other',
+};

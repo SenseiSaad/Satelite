@@ -3,8 +3,6 @@
  * on the page. Longer prose stays inside each section component.
  */
 
-import { site } from './site';
-
 export interface ProblemItem {
   index: string;
   title: string;
@@ -53,7 +51,7 @@ export const steps: Step[] = [
     number: '02',
     label: 'Check',
     title: 'Focus on the fields and usable observations',
-    body: 'Clouds can hide the ground, so observations are checked for visibility and matched to the field boundaries supplied by a partner.',
+    body: 'Field boundary data and observations are supplied by a partner, and observations are checked for visibility before they are summarized.',
     detail: 'Unclear observations should be treated cautiously, not as certain results.',
   },
   {
@@ -71,38 +69,37 @@ export const steps: Step[] = [
     detail: 'Pilot requirements will help determine the first delivery format.',
   },
 ];
-
-export interface Metric {
-  name: string;
-  body: string;
-}
-
-export const metrics: Metric[] = [
+/**
+ * Sections of the intended field report. Described as format only: no
+ * example values, because no pilot results have been published yet.
+ */
+export const reportFormat = [
   {
-    name: 'Crop condition',
+    label: 'Crop condition',
     body: 'A summary of signs that crops may be under stress, based on visible changes in the satellite images.',
   },
   {
-    name: 'Change over time',
+    label: 'Change over time',
     body: 'How visible crop growth appears to change between usable observations during the season.',
   },
   {
-    name: 'Possible flood impact',
+    label: 'Possible flood impact',
     body: 'An estimate of how much of a selected field may be covered by water.',
   },
   {
-    name: 'Estimated affected area',
+    label: 'Estimated affected area',
     body: 'A preliminary estimate to help teams prioritize follow-up, not a confirmed insurance loss.',
   },
   {
-    name: 'How clear the evidence is',
+    label: 'How clear the evidence is',
     body: 'A note about the quality of the observation, including factors such as cloud cover.',
   },
   {
-    name: 'Observation date',
+    label: 'Observation date',
     body: 'When the satellite image was captured, so you can see how recent the information is.',
   },
-];
+] as const;
+
 
 export interface Audience {
   id: string;
@@ -145,44 +142,80 @@ export interface AwsService {
   purpose: string;
 }
 
-/** Proposed AWS services for the future satellite-processing product. */
-export const plannedAwsServices: AwsService[] = [
+export interface AwsPhase {
+  name: string;
+  services: AwsService[];
+}
+
+/** Planned AWS services, grouped into a phased rollout. */
+export const awsPhases: AwsPhase[] = [
   {
-    name: 'Amazon S3',
-    purpose: 'Keep source satellite images and the field reports created from them.',
+    name: 'Phase 1: pilot',
+    services: [
+      {
+        name: 'Amazon S3',
+        purpose:
+          'Will store the open satellite imagery for each pilot region. Large images need cheap and durable object storage.',
+      },
+      {
+        name: 'AWS Lambda and Amazon EventBridge',
+        purpose:
+          'Planned to notice when new satellite observations arrive and trigger the next processing step without a server running all day.',
+      },
+      {
+        name: 'AWS Batch',
+        purpose:
+          'Will run the bursty image-analysis jobs. Compute scales up when observations arrive and down to zero when they do not.',
+      },
+      {
+        name: 'Amazon DynamoDB and Amazon SES',
+        purpose:
+          'Planned intake for early-access requests, so the pilot pipeline starts from data that is already structured.',
+      },
+    ],
   },
   {
-    name: 'AWS Lambda and Amazon EventBridge',
-    purpose: 'Notice when new satellite images are available and start the next processing steps.',
+    name: 'Phase 2: modelling and data',
+    services: [
+      {
+        name: 'Amazon SageMaker',
+        purpose:
+          'Will host the development and evaluation of crop condition and flood impact models against field observations.',
+      },
+      {
+        name: 'Amazon RDS for PostgreSQL with PostGIS',
+        purpose:
+          'Planned home for field boundaries and results. Geospatial queries such as "fields inside this district" fit a spatial database.',
+      },
+      {
+        name: 'AWS Step Functions',
+        purpose:
+          'Will coordinate the multi-step processing workflow and retry tasks that fail partway.',
+      },
+    ],
   },
   {
-    name: 'AWS Step Functions',
-    purpose: 'Coordinate the multi-step image processing workflow and retry failed tasks.',
-  },
-  {
-    name: 'AWS Batch',
-    purpose:
-      'Run large image-processing jobs when new observations arrive, scaling compute up and down as needed.',
-  },
-  {
-    name: 'Amazon SageMaker',
-    purpose: 'Develop and run models that estimate crop condition and possible flood impact.',
-  },
-  {
-    name: 'Amazon RDS for PostgreSQL with PostGIS',
-    purpose: 'Store field boundaries and results, and find results by location.',
-  },
-  {
-    name: 'Amazon ECS with AWS Fargate',
-    purpose: 'Run the customer-facing service without managing individual servers.',
-  },
-  {
-    name: 'Amazon API Gateway',
-    purpose: 'Provide a controlled way for customer systems to request reports.',
-  },
-  {
-    name: 'Amazon CloudWatch and AWS Secrets Manager',
-    purpose: 'Monitor service health and protect access credentials.',
+    name: 'Phase 3: delivery',
+    services: [
+      {
+        name: 'Amazon ECS with AWS Fargate',
+        purpose:
+          'Will serve the report interface without managing individual servers.',
+      },
+      {
+        name: 'Amazon API Gateway',
+        purpose:
+          'Planned front door for partner systems that request reports programmatically.',
+      },
+      {
+        name: 'Amazon CloudWatch',
+        purpose: 'Planned for monitoring service health and job outcomes.',
+      },
+      {
+        name: 'AWS Secrets Manager',
+        purpose: 'Planned for keeping access credentials out of code and configuration.',
+      },
+    ],
   },
 ];
 
@@ -206,7 +239,7 @@ export const roadmapStages: RoadmapStage[] = [
       'Estimate which fields may be affected by water',
       'Agree on a simple report format with pilot partners',
     ],
-    phase: 'First',
+    phase: 'Planned',
   },
   {
     number: '02',
@@ -218,7 +251,7 @@ export const roadmapStages: RoadmapStage[] = [
       'Provide a clearer view of possible flood impact',
       'Summarize conditions across larger areas',
     ],
-    phase: 'Later',
+    phase: 'Planned',
   },
   {
     number: '03',
@@ -230,7 +263,7 @@ export const roadmapStages: RoadmapStage[] = [
       'Options to share results with existing tools',
       'Clear pricing and service information',
     ],
-    phase: 'Later',
+    phase: 'Planned',
   },
 ];
 
@@ -243,41 +276,41 @@ export const faqItems: FaqItem[] = [
   {
     question: 'Where does the data come from?',
     answer:
-      'The product is designed to use open satellite observations from Sentinel-2 (European Space Agency) and Landsat (NASA and USGS). These datasets are publicly available; availability and image clarity vary by location and date.',
+      'Open satellite observations from Sentinel-2 and Landsat, plus other open datasets that are relevant to a region. All planned sources are publicly available; image clarity and availability vary by location and date.',
   },
   {
     question: 'How often is it updated?',
     answer:
-      'There is no guaranteed daily update. Satellites revisit locations on their own schedules, and clouds may make an image unusable. Reports will show the date of the observation they use.',
+      'Update frequency will align with satellite revisit times, and clouds can hide the ground between passes. We will agree the practical update rhythm with each pilot partner.',
   },
   {
     question: 'How accurate is it?',
     answer:
-      'We do not yet have validated accuracy figures to publish. The pilot compares estimates with field observations and partner records before we make performance claims.',
+      'We will validate estimates against ground observations with pilot partners before publishing any accuracy figure. Until that work is done we make no accuracy claims.',
   },
   {
     question: 'Which regions and crops do you support?',
-    answer: `Fieldline covers field crops worldwide, including ${site.coverage.crops}. Tell us your region and crop so we can assess whether it fits.`,
+    answer: `Planned coverage: cotton, wheat, rice, maize and soybean, with regions chosen with pilot partners. Tell us your region and crop so we can assess whether it fits.`,
   },
   {
     question: 'Can I upload my own field boundaries?',
     answer:
-      'Field boundaries identify the land to assess. The product works with partner-supplied field locations; accepted formats and pilot terms are agreed with participants.',
+      'That is planned. Partners will supply their field boundaries and we will agree accepted formats with the pilot group before any data processing starts.',
   },
   {
     question: 'How is my data handled?',
     answer:
-      'Data access and handling are agreed with pilot partners before their information is processed. Signup data is stored securely in Amazon DynamoDB and used only to contact you about early access.',
+      'The form only collects the fields you see on it. We use those details to contact you about the pilot and remove them on request. Full details are on the privacy page.',
   },
   {
     question: 'What does it cost?',
     answer:
-      'Pricing and pilot terms are being finalized while we iterate on the final changes. We will discuss scope directly with interested organizations.',
+      'Pricing has not been decided. It will be decided with the pilot group, and early partners are expected to influence it.',
   },
   {
     question: 'Do you need ground truth?',
     answer:
-      'Ground observations and partner records will be important for checking whether the estimates are useful. Any data-sharing scope would be agreed before a pilot.',
+      'Yes. Partner field observations will be used to validate the estimates, and any data-sharing scope is agreed with the partner before a pilot starts.',
   },
 ];
 
@@ -303,27 +336,3 @@ export const earlyAccessBenefits: { index: string; title: string; body: string }
     body: 'Crops, regions, outputs and pricing are decided with the pilot group before they are decided for everyone.',
   },
 ];
-
-/** Illustrative values only; they are not real pilot observations or validated results. */
-export const exampleReport = [
-  {
-    label: 'Crop stress',
-    value: '0.62 / 1',
-    explanation: 'Example scale: higher values mean more visible stress.',
-  },
-  {
-    label: 'Field area possibly under water',
-    value: '31%',
-    explanation: 'Illustrative estimate from a made-up example field.',
-  },
-  {
-    label: 'Estimated affected area',
-    value: '24.5%',
-    explanation: 'A preliminary estimate, not a confirmed loss.',
-  },
-  {
-    label: 'Evidence clarity',
-    value: '81%',
-    explanation: 'Illustrative confidence indicator, not a measured accuracy rate.',
-  },
-] as const;
