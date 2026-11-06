@@ -1,8 +1,8 @@
 {
-  "name": "fieldline-site",
+  "name": "northgate-labs-site",
   "version": "0.1.0",
   "private": true,
-  "description": "Early access website for Fieldline, satellite based risk analytics for agriculture.",
+  "description": "Early access website for Northgate Labs, satellite based risk analytics for agriculture.",
   "packageManager": "pnpm@12.6.0",
   "engines": {
     "node": ">=20.9.0"

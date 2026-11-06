@@ -116,7 +116,7 @@ async function sendByEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_ADDRESS ?? `Fieldline <onboarding@resend.dev>`,
+        from: process.env.RESEND_FROM_ADDRESS ?? `Northgate Labs <onboarding@resend.dev>`,
         to: [site.email],
         subject: `Early access request: ${data.organization}`,
         text: buildSubmissionText(data, meta.now, meta.ip),

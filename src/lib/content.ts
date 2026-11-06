@@ -328,7 +328,7 @@ export const earlyAccessBenefits: { index: string; title: string; body: string }
   {
     index: '03',
     title: 'A direct conversation',
-    body: 'Discuss product needs and practical constraints with the team building Fieldline.',
+    body: 'Discuss product needs and practical constraints with the team building Northgate Labs.',
   },
   {
     index: '04',

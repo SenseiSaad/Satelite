@@ -6,7 +6,7 @@
 const env = process.env;
 
 export const site = {
-  name: 'Fieldline',
+  name: 'Northgate Labs',
   positioning: 'Clear, field-by-field information about crop conditions and flood impacts.',
   tagline: 'Helping agricultural teams understand crop and flood risk, one field at a time.',
   // Canonical origin, set with NEXT_PUBLIC_SITE_URL. Falls back to localhost
@@ -21,7 +21,7 @@ export const site = {
     regions: 'regions chosen with pilot partners',
   },
   description:
-    'Fieldline is developing field-level crop condition and flood impact information from open satellite data, to help agricultural insurers, lenders and public agencies make better-informed decisions.',
+    'Northgate Labs is developing field-level crop condition and flood impact information from open satellite data, to help agricultural insurers, lenders and public agencies make better-informed decisions.',
 } as const;
 
 export type Site = typeof site;

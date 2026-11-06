@@ -74,7 +74,7 @@ export function Hero() {
 
         <Reveal delay={0.18}>
           <aside
-            aria-label="Fieldline in brief"
+            aria-label="Northgate Labs in brief"
             className="rounded-[1.25rem] border border-line bg-surface p-6 sm:p-8"
           >
             <p className="mono-label text-brand">A practical early-warning view</p>

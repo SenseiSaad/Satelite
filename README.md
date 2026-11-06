@@ -1,6 +1,6 @@
-# Fieldline: early access site
+# Northgate Labs: early access site
 
-Early access website for Fieldline. Fieldline is an early-stage product that
+Early access website for Northgate Labs. Northgate Labs is an early-stage product that
 aims to summarize crop condition and possible flood impact from open satellite
 data. No pilot results or accuracy figures are published on this site.
 
@@ -48,7 +48,7 @@ confirmation email is sent to the person who submits.
 
 ```bash
 aws dynamodb create-table \
-  --table-name fieldline-early-access \
+  --table-name northgate-early-access \
   --attribute-definitions AttributeName=pk,AttributeType=S \
   --key-schema AttributeName=pk,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
@@ -73,7 +73,7 @@ To remove a test row:
 
 ```bash
 aws dynamodb delete-item \
-  --table-name fieldline-early-access \
+  --table-name northgate-early-access \
   --key '{"pk":{"S":"EMAIL#you@your-domain.test"}}' \
   --region us-west-2
 ```
@@ -88,7 +88,7 @@ aws dynamodb delete-item \
       "Sid": "PutSignupIfEmailIsNew",
       "Effect": "Allow",
       "Action": ["dynamodb:PutItem"],
-      "Resource": "arn:aws:dynamodb:us-west-2:123456789012:table/fieldline-early-access"
+      "Resource": "arn:aws:dynamodb:us-west-2:123456789012:table/northgate-early-access"
     }
   ]
 }

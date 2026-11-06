@@ -24,7 +24,7 @@ export function Architecture() {
             titleId="architecture-title"
             eyebrow="AWS and the product plan"
             title="A phased plan for cloud resources where they add value."
-            lead="Fieldline is designed around AWS in three phases. Satellite images are large, analysis needs vary over the season, and this plan will grow with what the pilot proves is needed."
+            lead="Northgate Labs is designed around AWS in three phases. Satellite images are large, analysis needs vary over the season, and this plan will grow with what the pilot proves is needed."
           />
 
           <div className="mt-10 space-y-8">

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'fieldline-theme';
+const STORAGE_KEY = 'northgate-theme';
 
 /**
  * The source of truth is data-theme on <html>, set before first paint by

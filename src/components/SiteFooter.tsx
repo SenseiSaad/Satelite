@@ -29,7 +29,7 @@ export function SiteFooter() {
           </a>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-page/75">{site.tagline}</p>
           <p className="mt-6 max-w-sm text-xs leading-relaxed text-page/60">
-            Fieldline is in early access. Product capabilities and pilot scope may be refined as
+            Northgate Labs is in early access. Product capabilities and pilot scope may be refined as
             partners come on board.
           </p>
           <div className="mt-6">

@@ -15,7 +15,7 @@ export function Audiences() {
             titleId="audiences-title"
             eyebrow="Who it may help"
             title="One shared view of field conditions."
-            lead="Different teams ask different questions. Fieldline gives them a common, dated starting point for those conversations."
+            lead="Different teams ask different questions. Northgate Labs gives them a common, dated starting point for those conversations."
           />
 
           <div className="mt-10 divide-y divide-line border-y border-line">

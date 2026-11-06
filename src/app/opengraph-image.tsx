@@ -79,7 +79,7 @@ export default function OpengraphImage() {
               color: ink,
             }}
           >
-            FIELDLINE
+            NORTHGATE
           </div>
         </div>
         <div style={{ fontSize: 26, color: muted }}>{host}</div>
