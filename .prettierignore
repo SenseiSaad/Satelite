@@ -1,0 +1,10 @@
+.next/
+out/
+build/
+coverage/
+node_modules/
+pnpm-lock.yaml
+public/*.ico
+public/*.png
+*.tsbuildinfo
+next-env.d.ts

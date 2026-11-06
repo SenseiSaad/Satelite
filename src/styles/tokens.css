@@ -1,0 +1,83 @@
+/*
+ * Design tokens. Palette extracted from the reference image:
+ * pale mint ground, white panels, light mint fills, deep forest accent,
+ * near black green ink. Data hues for the stress scale were added on top
+ * and checked for WCAG AA contrast on both white and mint.
+ */
+
+@theme {
+  /* Surfaces */
+  --color-page: #dce9df;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef5ef;
+  --color-ink: #10231a;
+  --color-ink-2: #46584d;
+  --color-line: #c9d9cc;
+  --color-brand: #1e5135;
+  --color-brand-strong: #16402a;
+  /* Text that sits on a brand background: white in light, dark mint in dark. */
+  --color-brand-contrast: #ffffff;
+
+  /* Stress scale. Text variants are AA on white and on mint. */
+  --color-ok: #2e7d4f;
+  --color-ok-fill: #bfe0c8;
+  --color-watch: #8f5a0e;
+  --color-watch-fill: #e4b866;
+  --color-severe: #b03127;
+  --color-severe-fill: #e7a49c;
+  --color-flood: #2a6ea6;
+  --color-flood-fill: #a9cbe6;
+  --color-nodata: #7e8f84;
+
+  /* Type */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Motion. One entrance curve for everything. */
+  --ease-entrance: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Shape */
+  --radius-card: 1.75rem;
+  --shadow-card: 0 24px 48px -32px rgb(16 35 26 / 0.45);
+  --shadow-soft: 0 12px 28px -20px rgb(16 35 26 / 0.35);
+}
+
+/*
+ * Dark theme. Same token names, night palette. The <html> element carries
+ * data-theme="light" or data-theme="dark", set by the bootstrap script in
+ * layout.tsx before first paint, and switched by the header toggle.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-page: #0b1510;
+  --color-surface: #13221a;
+  --color-surface-2: #1a2c22;
+  --color-ink: #e7efe9;
+  --color-ink-2: #a4b5a9;
+  --color-line: #2b4134;
+  --color-brand: #5ebd8b;
+  --color-brand-strong: #79d0a2;
+  --color-brand-contrast: #0b1510;
+
+  /* Stress scale, brightened for AA on dark surfaces. Fills go muted. */
+  --color-ok: #6ec98c;
+  --color-ok-fill: #2c563f;
+  --color-watch: #e3ba66;
+  --color-watch-fill: #5e4a1f;
+  --color-severe: #ff9d90;
+  --color-severe-fill: #643733;
+  --color-flood: #93c5ef;
+  --color-flood-fill: #2e557b;
+  --color-nodata: #8fa79a;
+
+  --shadow-card: 0 24px 48px -32px rgb(0 0 0 / 0.8);
+  --shadow-soft: 0 12px 28px -20px rgb(0 0 0 / 0.7);
+}
+
+/* In dark mode the inverted "ink" band becomes light, so its focus ring
+   must be a dark green rather than the light green used in light mode. */
+:root[data-theme='dark'] .on-ink :focus-visible {
+  outline-color: #16402a;
+}
