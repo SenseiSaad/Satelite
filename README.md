@@ -59,9 +59,9 @@ Item shape written by the app:
 
 ```json
 {
-  "pk": { "S": "EMAIL#info@northgatelabs.space" },
+  "pk": { "S": "EMAIL#admin@northgatelabs.space" },
   "entityType": { "S": "early_access" },
-  "email": { "S": "info@northgatelabs.space" },
+  "email": { "S": "admin@northgatelabs.space" },
   "fullName": { "S": "Full name" },
   "organization": { "S": "Organization" },
   "consent": { "BOOL": true },
@@ -74,7 +74,7 @@ To remove a test row:
 ```bash
 aws dynamodb delete-item \
   --table-name northgate-early-access \
-  --key '{"pk":{"S":"EMAIL#info@northgatelabs.space"}}' \
+  --key '{"pk":{"S":"EMAIL#admin@northgatelabs.space"}}' \
   --region us-west-2
 ```
 
