@@ -14,10 +14,10 @@ export const hectareRanges = ['under_50', '50_500', '500_5000', 'over_5000', 'un
 export type HectareRange = (typeof hectareRanges)[number];
 
 export const hectareLabels: Record<HectareRange, string> = {
-  under_50: 'Under 50 ha',
-  '50_500': '50 to 500 ha',
-  '500_5000': '500 to 5,000 ha',
-  over_5000: 'Over 5,000 ha',
+  under_50: 'Under 50',
+  '50_500': '50 to 500',
+  '500_5000': '500 to 5,000',
+  over_5000: 'Over 5,000',
   unsure: 'Not sure yet',
 };
 

@@ -333,7 +333,7 @@ export function EarlyAccessForm({ contactEmail }: EarlyAccessFormProps) {
                   value={crop}
                   {...register('cropsOfInterest')}
                 />
-                <span className="inline-flex rounded-full border border-line bg-white px-3.5 py-2 text-sm text-ink transition-colors duration-200 peer-checked:border-brand peer-checked:bg-brand peer-checked:text-brand-contrast peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
+                <span className="inline-flex rounded-full border border-line bg-surface-2 px-3.5 py-2 text-sm text-ink transition-colors duration-200 hover:border-ink/30 peer-checked:border-brand peer-checked:bg-brand peer-checked:text-brand-contrast peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
                   {cropLabels[crop] ?? crop}
                 </span>
               </label>
